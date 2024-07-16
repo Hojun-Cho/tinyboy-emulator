@@ -147,7 +147,7 @@ struct Event
 
 extern u8 *rom, *back, reg[256], oam[256];
 extern u8 vram[16384];
-extern int nrom;
+extern int nrom, nback, nbackbank;
 extern u32 pal[64];
 extern u8 dma;
 extern u32 divclock;
