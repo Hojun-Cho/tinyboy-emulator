@@ -266,6 +266,7 @@ bits(void)
   u16 a = HL();
   u8 v;
   int t;
+
   if (n == 6) {
     v = memread(a);
     t = 16;
@@ -303,7 +304,7 @@ bits(void)
           v = (v & 0x80) | v >> 1;
           break;
         case 6:
-          r[rF] = v << 0;
+          r[rF] = 0;
           v = v << 4 | v >> 4;
           break;
         case 7:
