@@ -2,6 +2,8 @@
 
 static int
 mbc0(int a, int _);
+static int
+mbc1(int a, int _);
 
 u8* rom;
 u8 *romb, *vramb, *wramb, *eramb;
@@ -15,7 +17,7 @@ int prish;
 u8 dma;
 u32 moncols[4];
 u32 white;
-int (*mappers[])(int, int) = { mbc0 };
+int (*mappers[])(int, int) = { mbc0, mbc1 };
 int (*mapper)(int, int);
 
 static u8
@@ -190,6 +192,45 @@ mbc0(int a, int _)
       panic("MBC0 does not have function of %d", a);
   }
   return 0;
+}
+
+static int
+mbc1(int a, int v)
+{
+	static u8 ramen, b0, b1, romram;
+	u16 b;
+
+	if (a < 0) {
+		switch(a) {
+		case INIT: return 0;
+		case SAVE:
+		case RSTR:
+			break;
+		case READ:
+			return -1;
+		default: panic("MBC1 does not have function of %d", a);
+		}
+	}
+	switch (a >> 13) {
+	case 0: ramen = (v & 0xF) == 0xA; break;
+	case 1: v &= 0x1F; b0 = v != 0 ? v : 1; break;
+	case 2: b1 = v & 3; b1 % nbackbank; break;
+	case 3: romram = v & 1; break;
+	}
+	b = b0;
+	if (romram == 0)
+		b |= b1 << 5;
+	b %= nrom >> 14; /* 32KB => 2bank */
+	romb = rom + (b << 14);
+	if (ramen) {
+		if (romram)
+			eramb = back + (b1 << 13);
+		else
+			eramb = back;
+	} else {
+		eramb = nil;
+	}
+	return 0;
 }
 
 void
