@@ -1,5 +1,9 @@
 #include <stdint.h>
 
+#define nelem(x) (sizeof(x)/sizeof(x[0]))
+
+#define VAR(a) {&a, sizeof(a), 1}
+#define ARR(a) {a, sizeof(*a), nelem(a)}
 #define nil ((void*)0)
 #define JOYPAD_CYCLE (30)
 
@@ -128,6 +132,8 @@ enum
   GB_KEY_START = 0x80
 };
 
+enum { NEVENT = 2 + 1};
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef int8_t i8;
@@ -136,6 +142,7 @@ typedef int32_t i32;
 typedef uint64_t u64;
 typedef int64_t i64;
 typedef struct Event Event;
+typedef struct Var Var;
 
 struct Event
 {
@@ -144,6 +151,15 @@ struct Event
   Event* next;
   void* aux;
 };
+
+struct Var
+{
+	void *a;
+	int s, n;
+};
+
+#define VAR(a) {&a, sizeof(a), 1}
+#define ARR(a) {a, sizeof(*a), nelem(a)}
 
 extern u8 *rom, *back, reg[256], oam[256];
 extern u8 vram[16384];
@@ -163,6 +179,7 @@ extern u32 moncols[4];
 extern u32 white;
 extern u8* pic;
 extern int (*mapper)(int, int);
+extern Event *events[NEVENT];
 
 /* joypad */
 void
@@ -206,6 +223,11 @@ flush();
 void
 initwindow(int scale);
 
+/* save */
+void
+putvars(Var *v);
+void
+getvars(Var *v);
 /* error */
 void
 error(const char*, ...);

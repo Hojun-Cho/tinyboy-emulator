@@ -1,7 +1,10 @@
 #include "gb.h"
 
 Event evhblank, evjoypad;
+Event *events[NEVENT] = {&evhblank, &evjoypad, nil};
 Event* elist;
+
+Var evvars[] = {{nil, 0, 0}};
 
 void
 addevent(Event* ev, int time)

@@ -36,6 +36,9 @@ u64 hblclock, rendclock;
 static int cyc, ppux, ppux0;
 sprite spr[10], *sprm;
 
+Var ppuvars[] = {VAR(ppustate), VAR(ppuy), VAR(hblclock), VAR(rendclock),
+									{nil, 0, 0}};
+
 void
 pputask(void* _)
 {

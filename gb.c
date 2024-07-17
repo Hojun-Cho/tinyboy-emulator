@@ -5,7 +5,6 @@
 int cpuhalt;
 int backup;
 int savefd = -1;
-u64 clock;
 u8 mbc, feat, mode;
 
 static void
