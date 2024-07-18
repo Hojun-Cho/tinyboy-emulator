@@ -1,7 +1,7 @@
 #include "gb.h"
 
 Event evhblank, evjoypad;
-Event *events[NEVENT] = {&evhblank, &evjoypad, nil};
+Event *events[NEVENT] = {&evhblank, &evjoypad};
 Event* elist;
 
 Var evvars[] = {{nil, 0, 0}};

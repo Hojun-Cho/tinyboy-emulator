@@ -132,7 +132,7 @@ enum
   GB_KEY_START = 0x80
 };
 
-enum { NEVENT = 2 + 1};
+enum { NEVENT = 2 };
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -180,6 +180,7 @@ extern u32 white;
 extern u8* pic;
 extern int (*mapper)(int, int);
 extern Event *events[NEVENT];
+extern int savereq, loadreq;
 
 /* joypad */
 void
@@ -219,15 +220,22 @@ reset(void);
 
 /* graphic */
 void
-flush();
-void
 initwindow(int scale);
+void
+render();
 
 /* save */
 void
 putvars(Var *v);
 void
 getvars(Var *v);
+void
+flush();
+int
+savestate(const char *fname);
+int
+loadstate(const char *fname);
+
 /* error */
 void
 error(const char*, ...);

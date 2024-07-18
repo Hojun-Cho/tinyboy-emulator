@@ -160,6 +160,7 @@ memwrite(u16 a, u8 v)
         eramb[a - 0xa000] = v;
       else
         mapper(a, v);
+			writeback();
       return;
     case 12: case 14:
       wram[a & 0xFFF] = v;

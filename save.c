@@ -14,7 +14,7 @@ putevents(void)
 		if(elist == events[i]) /* find head */
 			break;
 	if(i == NEVENT && elist != nil)
-		error("Unkown event in chain [%p]", e->next);
+		error("Unkown event in chain [%p]", elist);
 	fputc(i, fp);
 	for(i = 0; i < NEVENT; ++i){
 		e = events[i];
@@ -125,10 +125,10 @@ getevents(void)
 	Event *e;
 
 	i = fgetc(fp);
-	if(i > NEVENT){
-		error("Unkown event index [%d]", i);
+	if(i >= NEVENT)
 		elist = nil;
-	}
+	else
+		elist = events[i];
 	for(i = 0; i < NEVENT; ++i){
 		e = events[i];
 		e->time = fgetc(fp);
@@ -136,12 +136,10 @@ getevents(void)
 		e->time |= fgetc(fp) << 16;
 		e->time |= fgetc(fp) << 24;
 		j = fgetc(fp);
-		if(j >= NEVENT){
-			error("Unkown event index [%d]", j);
+		if(j >= NEVENT)
 			e->next = nil;
-		}else{
+		else
 			e->next = events[j];
-		}
 	}
 }
 
