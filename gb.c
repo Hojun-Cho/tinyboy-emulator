@@ -1,12 +1,55 @@
 #include "gb.h"
 #include "co/task.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
+int savereq, loadreq;
 int cpuhalt;
 int backup;
-int savefd = -1;
-u64 clock;
+FILE *savefp;
+int saveframes;
+const char *romname;
 u8 mbc, feat, mode;
+
+void
+writeback(void)
+{
+	if(saveframes == 0)
+		saveframes = 15;
+}
+
+void
+flushback(void)
+{
+	if(savefp != nil)
+		fwrite(back, 1, nback, savefp);
+	saveframes = 0;
+}
+
+static void
+loadsave(const char *file)
+{
+	u8 *buf, *p;
+
+	buf = xalloc(strlen(file) + 4);
+	strcpy(buf, file);
+	p = strrchr(buf, '.');
+	if(p == nil)
+		p = buf + strlen(buf);
+	strcpy(p, ".sav");
+	savefp = fopen(buf, "w+");
+	if(savefp == 0){
+		error("Can't load save file '%s'", file);
+		free(buf);
+		return;
+	}
+	back = xalloc(nback);
+	fwrite(back, 1, nback, savefp); 
+	free(buf);
+	atexit(flushback);
+}
 
 static void
 loadrom(const char* file)
@@ -48,7 +91,6 @@ loadrom(const char* file)
 		default: panic("Unkown Ram size %d\n", rom[0x149]);
 		}
 	}
-	back = xalloc(nback);
 	if(nback == 0)
 		nbackbank = 1;
 	else
@@ -60,6 +102,32 @@ loadrom(const char* file)
   }
   if ((rom[0x143] & 0x80) != 0 && (mode & FORCEDMG) == 0)
     mode = CGB | COL;
+	if((feat & FEATBAT) != 0)
+		loadsave(file);
+}
+
+void
+flush()
+{
+	static char *savestatename;
+	if (savestatename == 0){
+		int len = strlen(romname);
+		savestatename = xalloc(len + 4);
+		strncpy(savestatename, romname, len);
+		strcpy(savestatename + len, "-state.save");
+	}
+
+  render();
+	if(saveframes > 0 && -- saveframes == 0)
+		flushback();
+	if(savereq){
+		savestate(savestatename);
+		savereq = 0;
+	}
+	if(loadreq){
+		loadstate(savestatename);
+		loadreq = 0;
+	}
 }
 
 static void
@@ -81,8 +149,8 @@ colinit(void)
 void
 taskmain(int argc, char* argv[])
 {
+  loadrom(romname = argv[1]);
   colinit();
-  loadrom(argv[1]);
   initwindow(5);
   initevent();
   meminit();

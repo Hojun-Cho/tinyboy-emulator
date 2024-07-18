@@ -9,16 +9,17 @@ u8* rom;
 u8 *romb, *vramb, *wramb, *eramb;
 u8 wram[32768], vram[16384], oam[256], reg[256];
 u8* back;
-u8 palm[128];
 u32 pal[64];
 int nrom, nback, nbackbank;
+u64 clock;
 u32 divclock;
 int prish;
-u8 dma;
 u32 moncols[4];
 u32 white;
 int (*mappers[])(int, int) = { mbc0, mbc1 };
 int (*mapper)(int, int);
+
+Var memvars[] = {ARR(wram), ARR(vram), ARR(oam), ARR(reg), VAR(clock), VAR(divclock), {nil, 0, 0}};
 
 static u8
 regread(u16 a)
@@ -159,6 +160,7 @@ memwrite(u16 a, u8 v)
         eramb[a - 0xa000] = v;
       else
         mapper(a, v);
+			writeback();
       return;
     case 12: case 14:
       wram[a & 0xFFF] = v;
@@ -198,29 +200,29 @@ static int
 mbc1(int a, int v)
 {
 	static u8 ramen, b0, b1, romram;
+	static Var mbc1vars[] = {VAR(ramen), VAR(b0), VAR(b1), VAR(romram),
+														{nil, 0,0}};
 	u16 b;
 
 	if (a < 0) {
 		switch(a) {
 		case INIT: return 0;
-		case SAVE:
-		case RSTR:
-			break;
-		case READ:
-			return -1;
+		case SAVE: putvars(mbc1vars); break;
+		case RSTR: getvars(mbc1vars); break;
+		case READ: return -1;
 		default: panic("MBC1 does not have function of %d", a);
 		}
 	}
 	switch (a >> 13) {
 	case 0: ramen = (v & 0xF) == 0xA; break;
 	case 1: v &= 0x1F; b0 = v != 0 ? v : 1; break;
-	case 2: b1 = v & 3; b1 % nbackbank; break;
+	case 2: b1 = v & 3; b1 %= nbackbank; break;
 	case 3: romram = v & 1; break;
 	}
 	b = b0;
 	if (romram == 0)
 		b |= b1 << 5;
-	b %= nrom >> 14; /* 32KB => 2bank */
+	b %= nrom >> 14;
 	romb = rom + (b << 14);
 	if (ramen) {
 		if (romram)

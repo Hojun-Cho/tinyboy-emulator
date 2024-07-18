@@ -9,7 +9,7 @@ u8* pic;
 SDL_Renderer* renderer;
 SDL_Texture* bitmapTex;
 
-static void
+void
 render()
 {
   SDL_UpdateTexture(bitmapTex, nil, pic, 160 * sizeof(u32));
@@ -29,6 +29,8 @@ joypadevent(void*_)
     case SDL_KEYUP: keys = 0; break;
     case SDL_KEYDOWN:
       switch (evt.key.keysym.scancode) {
+				case SDL_SCANCODE_F1: savereq = 1; break;
+				case SDL_SCANCODE_F2: loadreq = 1; break;
         case SDL_SCANCODE_X: keys = GB_KEY_A; break;
         case SDL_SCANCODE_Z: keys = GB_KEY_B; break;
         case SDL_SCANCODE_UP: keys = GB_KEY_UP; break;
@@ -43,12 +45,6 @@ joypadevent(void*_)
     case SDL_QUIT: exit(1);
   }
   return;
-}
-
-void
-flush()
-{
-  render();
 }
 
 void

@@ -30,6 +30,9 @@ u8 r[8], ime;
 u16 pc, sp, curpc;
 int halt;
 
+Var cpuvars[] = {ARR(r), VAR(ime), VAR(pc), VAR(curpc), VAR(sp), VAR(halt),
+									{nil, 0, 0}};
+
 void
 state(void)
 {
