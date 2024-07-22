@@ -1,5 +1,4 @@
 #include "gb.h"
-#include "co/task.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -146,8 +145,8 @@ colinit(void)
   }
 }
 
-void
-taskmain(int argc, char* argv[])
+int
+main(int argc, char* argv[])
 {
   loadrom(romname = argv[1]);
   colinit();
@@ -155,7 +154,7 @@ taskmain(int argc, char* argv[])
   initevent();
   meminit();
   reset();
-  taskcreate(pputask, 0, 32768);
+	ppuinit();
 
   for (;;) {
     int t = step();

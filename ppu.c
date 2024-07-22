@@ -1,15 +1,17 @@
-#include "co/task.h"
 #include "gb.h"
 #include <string.h>
 
+#define ryield() {if(psetjmp(renderjmp) == 0) plongjmp(mainjmp, 1);}
+#define myield() {if(psetjmp(mainjmp) == 0) plongjmp(renderjmp, 1);}
 #define eat(nc)                                                                \
   if (cyc <= nc) {                                                             \
     for (i = 0; i < nc; i++)                                                   \
       if (--cyc == 0)                                                          \
-        taskyield();                                                           \
+        ryield();                                                           \
   } else                                                                       \
     cyc -= nc;
 
+typedef void *jmp_buf[10];
 typedef struct sprite sprite;
 struct sprite
 {
@@ -31,6 +33,7 @@ enum
   TILSPR = 0x04,
 };
 
+jmp_buf mainjmp,renderjmp;
 u8 ppustate, ppuy, ppuw;
 u64 hblclock, rendclock;
 static int cyc, ppux, ppux0;
@@ -39,13 +42,18 @@ sprite spr[10], *sprm;
 Var ppuvars[] = {VAR(ppustate), VAR(ppuy), VAR(hblclock), VAR(rendclock),
 									{nil, 0, 0}};
 
-void
-pputask(void* _)
+extern int psetjmp(jmp_buf buf);
+extern void plongjmp(jmp_buf buf, int v);
+
+static void
+ppurender(void)
 {
   int x, y, i, n, m, win;
   u16 ta, ca, chr;
   u8 tile;
   u32 sr[8], *picp;
+
+	ryield();
 
   for (;;) {
     eat(6 * 2);
@@ -82,7 +90,7 @@ pputask(void* _)
       if (cyc <= 2 * 8) {
         for (i = 0; i < 2 * 8; ++i)
           if (--cyc == 0)
-            taskyield();
+            ryield();
         y = ppuy + reg[SCY] << 1 & 14;
         ta = 0x1800 | reg[LCDC] << 7 & 0x400 | ppuy + reg[SCY] << 2 & 0x3E0 |
              ta & 0x1F;
@@ -108,7 +116,7 @@ pputask(void* _)
       m = 175 - reg[WX];
       goto restart;
     }
-    taskyield();
+    ryield();
   }
 }
 
@@ -211,7 +219,7 @@ ppusync(void)
     return;
   cyc = clock - rendclock;
   if (cyc != 0)
-    taskyield();
+    myield();
   sprites();
   rendclock = clock;
 }
@@ -286,4 +294,14 @@ hblanktick(void* _)
     addevent(&evhblank, t < 0 ? 456 * 2 : t);
     break;
   }
+}
+
+void
+ppuinit(void)
+{
+	static u8 stk[8192];
+
+	renderjmp[REG_RSP] = stk + sizeof(stk) - 64;
+	renderjmp[REG_RIP] = ppurender;
+	myield();
 }
