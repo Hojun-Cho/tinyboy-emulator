@@ -241,6 +241,8 @@ int
 savestate(const char *fname);
 int
 loadstate(const char *fname);
+void
+writeback(void);
 
 /* error */
 void
