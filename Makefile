@@ -1,5 +1,5 @@
 CC=tcc
-CFLAGS= -c -Wall -g -Wextra 
+CFLAGS= -Wall -g -Wextra  -g
 
 all: gb
 
@@ -8,4 +8,4 @@ clean:
 	rm -f gb
 	
 gb: $(OBJ)
-	$(CC) jmp.S *.c -lSDL2 -o gb
+	$(CC) jmp.S *.c -lSDL2 -o gb $(CFLAGS) 

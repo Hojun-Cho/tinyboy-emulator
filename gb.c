@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 int savereq, loadreq;
 int cpuhalt;
 int backup;
-FILE *savefp;
+int savefd = -1;
 int saveframes;
 const char *romname;
 u8 mbc, feat, mode;
@@ -22,9 +23,16 @@ writeback(void)
 void
 flushback(void)
 {
-	if(savefp != nil)
-		fwrite(back, 1, nback, savefp);
+	if(savefd >= 0)
+		pwrite(savefd, back, nback, 0);
 	saveframes = 0;
+}
+
+static void
+_flushback(void)
+{
+	flushback();
+	close(savefd);
 }
 
 static void
@@ -38,16 +46,23 @@ loadsave(const char *file)
 	if(p == nil)
 		p = buf + strlen(buf);
 	strcpy(p, ".sav");
-	savefp = fopen(buf, "w+");
-	if(savefp == 0){
-		error("Can't load save file '%s'", file);
+	savefd = open(buf, O_RDWR);
+	if(savefd == -1){
+		savefd = open(buf, O_RDWR|O_CREAT, 0664);
+		if(savefd == -1)
+			error("Can't load save file '%s'", file);
+		back = xalloc(nback);
+		if(write(savefd, back, nback)!= nback)
+			error("Can't Write %d byte to savefile", nback);
+		atexit(_flushback);
 		free(buf);
 		return;
 	}
 	back = xalloc(nback);
-	fwrite(back, 1, nback, savefp); 
+	if(read(savefd, back, nback) != nback)
+		error("savefile size is not matched\n");
+	atexit(_flushback);
 	free(buf);
-	atexit(flushback);
 }
 
 static void
