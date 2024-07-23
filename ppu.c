@@ -112,7 +112,7 @@ ppurender(void)
       win = 1;
       ta = 0x1800 | reg[LCDC] << 4 & 0x400 | ppuw - reg[WY] << 2 & 0x3E0;
       y = ppuw - reg[WY] << 1 & 14;
-      cyc += 2;
+      cyc += 12;
       m = 175 - reg[WX];
       goto restart;
     }
