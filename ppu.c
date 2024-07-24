@@ -34,7 +34,7 @@ enum
 };
 
 jmp_buf mainjmp,renderjmp;
-u8 ppustate, ppuy, ppuw;
+u8 ppustate, ppuy;
 u64 hblclock, rendclock;
 static int cyc, ppux, ppux0;
 sprite spr[10], *sprm;
@@ -110,8 +110,8 @@ ppurender(void)
     } while (m > 8);
     if (win == -1) {
       win = 1;
-      ta = 0x1800 | reg[LCDC] << 4 & 0x400 | ppuw - reg[WY] << 2 & 0x3E0;
-      y = ppuw - reg[WY] << 1 & 14;
+      ta = 0x1800 | reg[LCDC] << 4 & 0x400 | ppuy - reg[WY] << 2 & 0x3E0;
+      y = ppuy - reg[WY] << 1 & 14;
       cyc += 12;
       m = 175 - reg[WX];
       goto restart;
@@ -193,11 +193,11 @@ sprites(void)
     for (; x < x1; ++x) {
       attr = picp[x] >> prish;
       chr = q->chr;
-      if ((chr & ((q->t & SPRXFL) != 0 ? 0x0101 : 0x8080)) != 0 &&
+      if((chr & ((q->t & SPRXFL) != 0 ? 0x0101 : 0x8080)) != 0 &&
           (attr & TILSPR) == 0 &&
           ((mode & COL) != 0 && (reg[LCDC] & BGPRI) == 0 ||
            (attr & TILCOL0) != 0 ||
-           (attr & TILPRI) == 0 && (q->t & SPRPRI) == 0)) {
+           (attr & TILPRI) == 0 && (q->t & SPRPRI) == 0)){
         if ((q->t & SPRXFL) == 0)
           picp[x] = pal[q->pal | chr >> 15 | chr >> 6 & 2] | TILSPR << prish;
         else
@@ -245,8 +245,6 @@ hblanktick(void* _)
   switch (ppustate) {
   case 0:
     hblclock = clock + evhblank.time;
-    if (reg[WX] <= 166 && reg[WY] <= 143)
-      ppuw++;
     if (++ppuy == 144) {
       ppustate = 1;
       if (reg[STAT] & IRQM1)
@@ -265,11 +263,8 @@ hblanktick(void* _)
     break;
   case 1:
     hblclock = clock + evhblank.time;
-    if (reg[WX] <= 166 && reg[WY] <= 143)
-      ppuw++;
     if (++ppuy == 154) {
       ppuy = 0;
-      ppuw = 0;
       ppustate = 2;
       if (reg[STAT] & IRQM2)
         reg[IF] |= IRQLCDS;

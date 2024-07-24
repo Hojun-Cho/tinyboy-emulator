@@ -71,7 +71,6 @@ regwrite(u16 a, u8 v)
       ppusync();
       if ((~v & reg[a] & LCDEN) != 0) {
         ppuy = 0;
-        ppuw = 0;
         ppustate = 0;
         delevent(&evhblank);
       }
@@ -236,13 +235,9 @@ mbc1(int a, int v)
 }
 
 void
-meminit(void)
+meminit()
 {
-  union
-  {
-    u8 c[4];
-    u32 l;
-  } c;
+  union {u8 c[4]; u32 l;}c;
 
   c.c[0] = c.c[1] = c.c[2] = 0;
   c.c[3] = 1;
@@ -250,14 +245,12 @@ meminit(void)
     c.l >>= 1;
   c.c[0] = c.c[1] = c.c[2] = 0xff;
   c.c[3] = 0;
-  white = c.l;
 
   romb = rom + 0x4000;
   wramb = wram + 0x1000;
   vramb = vram;
   mapper = mappers[mbc];
   mapper(INIT, 0);
-
   reg[LCDC] = 0x91;
   reg[IF] = 0xE0;
   reg[SVBK] = 0xff;

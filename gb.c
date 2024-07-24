@@ -6,12 +6,10 @@
 #include <fcntl.h>
 
 int savereq, loadreq;
-int cpuhalt;
-int backup;
 int savefd = -1;
 int saveframes;
 const char *romname;
-u8 mbc, feat, mode;
+u8 mbc, mode;
 
 void
 writeback(void)
@@ -68,6 +66,7 @@ loadsave(const char *file)
 static void
 loadrom(const char* file)
 {
+	int feat;
   FILE* f;
   long sz;
   static u8 mbctab[31] = { 0, 1, 1, 1, -1, 2, 2, -1, 0,  0, -1, 6, 6, 6, -1, 3,
@@ -114,8 +113,8 @@ loadrom(const char* file)
       break;
     default: panic("unsupported mbc %d", mbc);
   }
-  if ((rom[0x143] & 0x80) != 0 && (mode & FORCEDMG) == 0)
-    mode = CGB | COL;
+  if (rom[0x143] & 0x80 != 0)
+		panic("unsupported color");
 	if((feat & FEATBAT) != 0)
 		loadsave(file);
 }
@@ -147,11 +146,7 @@ flush()
 static void
 colinit(void)
 {
-  union
-  {
-    u8 c[4];
-    u32 l;
-  } c;
+  union {u8 c[4]; u32 l;}c;
 
   c.c[3] = 0;
   for (int i = 0; i < 4; i++) {
