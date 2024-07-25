@@ -1,30 +1,29 @@
 #include "gb.h"
-#include <stdarg.h>
-#include <stdio.h>
+#include "print.h"
 #include <stdlib.h>
 #include <string.h>
 
 void
-panic(const char* fmt, ...)
+panic(char* fmt, ...)
 {
   va_list ap;
 
   va_start(ap, fmt);
-  fprintf(stderr, "panic:");
-  vfprintf(stderr, fmt, ap);
-  fprintf(stderr, "\n");
+  fprint(2, "panic:");
+  vfprint(2, fmt, ap);
+  fprint(2, "\n");
   exit(1);
 }
 
 void
-error(const char* fmt, ...)
+error(char* fmt, ...)
 {
   va_list ap;
 
   va_start(ap, fmt);
-  fprintf(stderr, "panic:");
-  vfprintf(stderr, fmt, ap);
-  fprintf(stderr, "\n");
+  fprint(2, "panic:");
+  vfprint(2, fmt, ap);
+  fprint(2, "\n");
 }
 
 void*
