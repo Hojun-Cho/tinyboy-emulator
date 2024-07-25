@@ -1,5 +1,4 @@
 #include "gb.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -66,31 +65,31 @@ loadsave(const char *file)
 static void
 loadrom(const char* file)
 {
-	int feat;
-  FILE* f;
+  int rc;
+  int feat;
+  int fd;
   long sz;
   static u8 mbctab[31] = { 0, 1, 1, 1, -1, 2, 2, -1, 0,  0, -1, 6, 6, 6, -1, 3,
                            3, 3, 3, 3, -1, 4, 4, 4,  -1, 5, 5,  5, 5, 5, 5 };
-	static u8 feattab[31] = {
-		0, 0, FEATRAM, FEATRAM|FEATBAT, 0, FEATRAM, FEATRAM|FEATBAT, 0,
-		FEATRAM, FEATRAM|FEATBAT, 0, 0, FEATRAM, FEATRAM|FEATBAT, 0, FEATTIM|FEATBAT,
-		FEATTIM|FEATRAM|FEATBAT, 0, FEATRAM, FEATRAM|FEATBAT, 0, 0, FEATRAM, FEATRAM|FEATBAT,
-		0, 0, FEATRAM, FEATRAM|FEATBAT, 0, FEATRAM, FEATRAM|FEATBAT,
-	};
+  static u8 feattab[31] = {
+  	0, 0, FEATRAM, FEATRAM|FEATBAT, 0, FEATRAM, FEATRAM|FEATBAT, 0,
+  	FEATRAM, FEATRAM|FEATBAT, 0, 0, FEATRAM, FEATRAM|FEATBAT, 0, FEATTIM|FEATBAT,
+  	FEATTIM|FEATRAM|FEATBAT, 0, FEATRAM, FEATRAM|FEATBAT, 0, 0, FEATRAM, FEATRAM|FEATBAT,
+  	0, 0, FEATRAM, FEATRAM|FEATBAT, 0, FEATRAM, FEATRAM|FEATBAT,
+  };
 	
-  f = fopen(file, "r");
-  if (f == nil)
+  fd = open(file, O_RDONLY);
+  if (fd == nil)
     panic("can't open %s", file);
-  fseek(f, 0, SEEK_END);
-  sz = ftell(f);
-  if (sz < 0 || sz > 32 * 1024 * 1024)
-    panic("bad size %d", sz);
-  fseek(f, 0, SEEK_SET);
+  sz = lseek(fd, 0, SEEK_END);
+  if(sz <= 0 || sz > 32*1024*1024)
+  	panic("invalid file size %d", sz);
+  lseek(fd, 0, SEEK_SET);
   nrom = sz;
   rom = xalloc(nrom);
-  if (fread(rom, 1, nrom, f) != nrom)
-    panic("siz is different %z", nrom);
-  fclose(f);
+  if((rc = read(fd, rom, nrom)) != nrom)
+	  panic("rom size is not matched %d\n", rc);
+  close(fd);
   if (rom[0x147] > 0x1F)
     panic("bad cartidge type %d\n", rom[0x147]);
   mbc = mbctab[rom[0x147]];

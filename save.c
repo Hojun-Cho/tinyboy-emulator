@@ -88,7 +88,7 @@ getvars(Var *v)
 			n = v->n;
 			q = v->a;
 			while(n--){
-				l |= fgetc(fp);
+				l  = fgetc(fp);
 				l |= fgetc(fp) << 8;
 				l |= fgetc(fp) << 16;
 				l |= fgetc(fp) << 24;

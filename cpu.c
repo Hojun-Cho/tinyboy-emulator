@@ -1,5 +1,5 @@
 #include "gb.h"
-#include <stdio.h>
+#include "print.h"
 
 #define BC() ((u16)r[rB] << 8 | r[rC])
 #define DE() ((u16)r[rD] << 8 | r[rE])
@@ -36,7 +36,7 @@ Var cpuvars[] = {ARR(r), VAR(ime), VAR(pc), VAR(curpc), VAR(sp), VAR(halt),
 void
 state(void)
 {
-  printf("A:%02X F:%02X B:%02X C:%02X D:%02X E:%02X H:%02X L:%02X SP:%04X "
+  print("A:%02X F:%02X B:%02X C:%02X D:%02X E:%02X H:%02X L:%02X SP:%04X "
          "PC:%04X PCMEM:%02X,%02X,%02X,%02X\n",
          r[rA],
          r[rF],

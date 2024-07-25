@@ -1,4 +1,3 @@
-CC=tcc
 CFLAGS= -Wall -g -Wextra  -g
 
 all: gb

@@ -245,8 +245,8 @@ writeback(void);
 
 /* error */
 void
-error(const char*, ...);
+error(char*, ...);
 void
-panic(const char*, ...);
+panic(char*, ...);
 void*
 xalloc(long);
