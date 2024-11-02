@@ -1,4 +1,4 @@
-CFLAGS= -Wall -g -Wextra  -g
+CFLAGS= -Wall -g
 
 all: gb
 
